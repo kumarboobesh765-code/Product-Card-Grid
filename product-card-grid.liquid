@@ -1,0 +1,131 @@
+{% comment %}
+  Product Card Grid – Reusable Section
+{% endcomment %}
+
+{{ 'product-card.css' | asset_url | stylesheet_tag }}
+{{ 'product-card.js' | asset_url | script_tag }}
+
+<section class="product-card-section">
+  <div class="page-width">
+
+    {% if section.settings.heading != blank %}
+      <h2 class="product-card-title">{{ section.settings.heading }}</h2>
+    {% endif %}
+
+    <div
+      class="product-card-grid"
+      id="productCardGrid-{{ section.id }}"
+      data-desktop-limit="{{ section.settings.desktop_limit }}"
+      data-mobile-limit="{{ section.settings.mobile_limit }}"
+    >
+      {% for block in section.blocks %}
+        {% assign col = collections[block.settings.collection] %}
+        {% if col %}
+          {% for product in col.products %}
+            <div class="product-card" data-url="{{ product.url }}">
+
+              <div class="product-card__image">
+                {% if product.compare_at_price > product.price %}
+                  <span class="product-badge">Sale</span>
+                {% endif %}
+                <img
+                  src="{{ product.featured_image | image_url: width: 600 }}"
+                  alt="{{ product.title }}"
+                  loading="lazy">
+              </div>
+
+              <div class="product-card__content">
+                <div class="product-title">{{ product.title }}</div>
+
+                <div class="product-rating"></div>
+
+                {% if product.compare_at_price > product.price %}
+                  <div class="product-price-row">
+                    <span class="product-discount">
+                      {{ product.compare_at_price | minus: product.price | times: 100 | divided_by: product.compare_at_price }}% OFF
+                    </span>
+                    <span class="product-compare">
+                      Rs. {{ product.compare_at_price | money_without_currency }}
+                    </span>
+                  </div>
+                {% endif %}
+
+                <div class="product-final-price">
+                  Rs. {{ product.price | money_without_currency }}
+                </div>
+
+                <button
+                  class="product-btn js-add-to-cart"
+                  data-variant="{{ product.selected_or_first_available_variant.id }}"
+                  {% unless product.selected_or_first_available_variant.available %}disabled{% endunless %}
+                >
+                  {% if product.selected_or_first_available_variant.available %}
+                    Add to Cart
+                  {% else %}
+                    Sold Out
+                  {% endif %}
+                </button>
+              </div>
+
+            </div>
+          {% endfor %}
+        {% endif %}
+      {% endfor %}
+    </div>
+
+    <div class="load-more-wrap">
+      <button class="product-btn load-more-btn">Load More</button>
+    </div>
+
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Product Card Grid",
+  "settings": [
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Section Heading",
+      "default": "Featured Products"
+    },
+    {
+      "type": "range",
+      "id": "desktop_limit",
+      "label": "Products on Desktop",
+      "min": 6,
+      "max": 36,
+      "step": 2,
+      "default": 12
+    },
+    {
+      "type": "range",
+      "id": "mobile_limit",
+      "label": "Products on Mobile",
+      "min": 2,
+      "max": 20,
+      "step": 2,
+      "default": 6
+    }
+  ],
+  "blocks": [
+    {
+      "type": "collection",
+      "name": "Collection",
+      "settings": [
+        {
+          "type": "collection",
+          "id": "collection",
+          "label": "Select collection"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Product Card Grid"
+    }
+  ]
+}
+{% endschema %}
